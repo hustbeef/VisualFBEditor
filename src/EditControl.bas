@@ -2032,8 +2032,11 @@ Namespace My.Sys.Forms
 						If BOMSymbolsCount Then
 							sFileContents = Mid(sFileContents, BOMSymbolsCount + 1)
 						End If
-						WReAllocate(wsFileContents, dwBytesRead)
-						MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, StrPtr(sFileContents), dwBytesRead, wsFileContents, dwBytesRead)
+						Dim As Integer wcharCount
+						wcharCount = MultiByteToWideChar(CP_UTF8, 0, StrPtr(sFileContents), dwBytesRead, 0, 0)
+						WReAllocate(wsFileContents, wcharCount)
+						MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, StrPtr(sFileContents), dwBytesRead, wsFileContents, wcharCount)
+						wsFileContents[wcharCount] = 0
 					End If
 					Dim As WString Ptr FText
 					Dim As EditControlLine Ptr FECLine
