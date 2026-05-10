@@ -11804,6 +11804,27 @@ Function GetMainFile(bSaveTab As Boolean = False, ByRef Project As ProjectElemen
 			ProjectNode = Node
 			If ee Then Project = Cast(ProjectElement Ptr, ee)
 			If ee AndAlso Project AndAlso WGet(Project->MainFileName) <> "" Then
+				If Not bSaveTab Then
+					For j As Integer = 0 To TabPanels.Count - 1
+						Var ptabCode = @Cast(TabPanel Ptr, TabPanels.Item(j))->tabCode
+						For i As Integer = 0 To ptabCode->TabCount - 1
+							tb = Cast(TabWindow Ptr, ptabCode->Tabs[i])
+							If tb AndAlso tb->ptn = Node AndAlso tb->FileName = WGet(Project->MainFileName) Then
+								If tb->Modified Then
+									Dim As UString FFileName
+									If GetFolderName(tb->FileName) = "" Then
+										FFileName = GetOSPath(ExePath & "/Temp/Untitled.bas")
+									Else
+										FFileName = GetFolderName(tb->FileName) & "Temp.bas"
+									End If
+									tb->txtCode.SaveToFile(FFileName, tb->FileEncoding, tb->NewLineType)
+									Return FFileName
+								End If
+								Exit For, For
+							End If
+						Next i
+					Next j
+				End If
 				Return WGet(Project->MainFileName)
 			Else
 				MsgBox ML("Project Main File don't set")
@@ -11814,8 +11835,15 @@ Function GetMainFile(bSaveTab As Boolean = False, ByRef Project As ProjectElemen
 				For i As Integer = 0 To ptabCode->TabCount - 1
 					tb = Cast(TabWindow Ptr, ptabCode->Tabs[i])
 					If tb AndAlso tb->tn = Node Then
-						If bSaveTab Then
-							If tb->Modified Then tb->Save
+						If tb->Modified Then
+							If bSaveTab Then
+								tb->Save
+							Else
+								Dim As UString FFileName
+								FFileName = GetOSPath(ExePath & "\Temp\Untitled.bas")
+								tb->txtCode.SaveToFile(FFileName, tb->FileEncoding, tb->NewLineType)
+								Return FFileName
+							End If
 						End If
 						Return tb->FileName
 					End If
@@ -11846,8 +11874,15 @@ Function GetMainFile(bSaveTab As Boolean = False, ByRef Project As ProjectElemen
 			End If
 			Return ""
 		Else
-			If bSaveTab Then
-				If tb->Modified Then tb->Save
+			If tb->Modified Then
+				If bSaveTab Then
+					tb->Save
+				Else
+					Dim As UString FFileName
+					FFileName = GetOSPath(ExePath & "\Temp\Untitled.bas")
+					tb->txtCode.SaveToFile(FFileName, tb->FileEncoding, tb->NewLineType)
+					Return FFileName
+				End If
 			End If
 			Var tn = tb->ptn
 			If tn->ImageKey = "Project" OrElse tn->Tag <> 0 AndAlso *Cast(ExplorerElement Ptr, tn->Tag) Is ProjectElement Then
@@ -12057,7 +12092,7 @@ Sub Versioning(ByRef FileName As WString, ByRef sFirstLine As WString, ByRef Pro
 							Pos1 = InStr(LTrim(sLine, Any !"\t "), " ")
 							If Pos1 > 0 Then
 								ResNameOrID = Trim(..Left(LTrim(sLine, Any !"\t "), Pos1 - 1), Any !"\t ")
-								If isNumeric(ResNameOrID) Then
+								If IsNumeric(ResNameOrID) Then
 									If MinResID = 0 OrElse MinResID > Val(ResNameOrID) Then MinResID = Val(ResNameOrID)
 								Else
 									If MinResName = "" OrElse LCase(MinResName) > LCase(ResNameOrID) Then MinResName = ResNameOrID
@@ -12085,7 +12120,7 @@ Sub Versioning(ByRef FileName As WString, ByRef sFirstLine As WString, ByRef Pro
 				If n = 1 Then NewLine = WChr(13) & WChr(10)
 			Loop
 			If Project AndAlso LCase(Trim(*Project->ApplicationIcon)) <> "a" AndAlso Trim(*Project->ApplicationIcon) <> "" Then
-				If isNumeric(*Project->ApplicationIcon) Then
+				If IsNumeric(*Project->ApplicationIcon) Then
 					If MinResName <> "" OrElse (MinResID <> 0 AndAlso Val(*Project->ApplicationIcon) > MinResID) Then
 						bChangeIcon = True
 						bFinded = True
