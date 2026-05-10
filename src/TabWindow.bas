@@ -11840,7 +11840,11 @@ Function GetMainFile(bSaveTab As Boolean = False, ByRef Project As ProjectElemen
 								tb->Save
 							Else
 								Dim As UString FFileName
-								FFileName = GetOSPath(ExePath & "\Temp\Untitled.bas")
+								If GetFolderName(tb->FileName) = "" Then
+									FFileName = GetOSPath(ExePath & "/Temp/Untitled.bas")
+								Else
+									FFileName = GetFolderName(tb->FileName) & "Temp.bas"
+								End If
 								tb->txtCode.SaveToFile(FFileName, tb->FileEncoding, tb->NewLineType)
 								Return FFileName
 							End If
@@ -11879,7 +11883,11 @@ Function GetMainFile(bSaveTab As Boolean = False, ByRef Project As ProjectElemen
 					tb->Save
 				Else
 					Dim As UString FFileName
-					FFileName = GetOSPath(ExePath & "\Temp\Untitled.bas")
+					If GetFolderName(tb->FileName) = "" Then
+						FFileName = GetOSPath(ExePath & "/Temp/Untitled.bas")
+					Else
+						FFileName = GetFolderName(tb->FileName) & "Temp.bas"
+					End If
 					tb->txtCode.SaveToFile(FFileName, tb->FileEncoding, tb->NewLineType)
 					Return FFileName
 				End If
